@@ -4,11 +4,16 @@ import { PagesService } from 'src/services/pages.service';
 import { PaginationResponseInterceptor } from 'src/interceptors/paginationResponse.interceptor';
 import { ItemResponseInterceptor } from 'src/interceptors/itemResponse.interceptor';
 import { CreatePageDto, UpdatePageDto } from '../dtos/page.dts';
+import { InjectRepository } from '@nestjs/typeorm';
+import { PageEntity } from 'src/entities/page.entity';
+import { Repository } from 'typeorm';
 
 @ApiTags('Page')
 @Controller('v1/pages')
 export class PageController {
-  constructor(private pageService: PagesService) {}
+  constructor(@InjectRepository(PageEntity)
+  private readonly repository: Repository<PageEntity>,
+  private pageService: PagesService) {}
 
   @UseInterceptors(new PaginationResponseInterceptor())
   @Get()
@@ -21,12 +26,14 @@ export class PageController {
 
   @Post()
   create(@Body() page: CreatePageDto) {
-    return this.save(0, page);
+    this.save(0, page);
+    return page;
   }
 
   @Put(':id')
   update(@Param('id') id: number, @Body() page: UpdatePageDto) {
-    return this.save(id, page);
+    this.save(id, page);
+    return page;
   }
 
   save(id: number, page: CreatePageDto | UpdatePageDto) {
@@ -38,6 +45,6 @@ export class PageController {
   @UseInterceptors(new ItemResponseInterceptor())
   @Get(':id')
   view(@Param('id') id: number) {
-    return this.pageService.findById(id);
+    return this.repository.findOne({ where: { id: id } });
   }
 }

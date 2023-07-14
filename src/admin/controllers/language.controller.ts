@@ -4,11 +4,16 @@ import { LanguagesService } from 'src/services/languages.service';
 import { PaginationResponseInterceptor } from 'src/interceptors/paginationResponse.interceptor';
 import { ItemResponseInterceptor } from 'src/interceptors/itemResponse.interceptor';
 import { CreateLanguageDto, UpdateLanguageDto } from '../dtos/language.dts';
+import { LanguageEntity } from 'src/entities/language.entity';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
 
 @ApiTags('Language')
 @Controller('v1/languages')
 export class LanguageController {
-  constructor(private languageService: LanguagesService) {}
+  constructor(@InjectRepository(LanguageEntity)
+  private readonly repository: Repository<LanguageEntity>,
+  private languageService: LanguagesService) {}
 
   @UseInterceptors(new PaginationResponseInterceptor())
   @Get()
@@ -21,13 +26,15 @@ export class LanguageController {
 
   @Post()
   create(@Body() language: CreateLanguageDto) {
-    return this.save(0, language);
+    this.save(0, language);
+    return language;
   }
 
   @Put(':id')
   update(@Param('id') id: number, @Body() language: UpdateLanguageDto) {
     console.log('PUT')
-    return this.save(id, language);
+    this.save(id, language);
+    return language;
   }
 
   save(id: number, language: CreateLanguageDto) {
@@ -39,6 +46,6 @@ export class LanguageController {
   @UseInterceptors(new ItemResponseInterceptor())
   @Get(':id')
   view(@Param('id') id: number) {
-    return this.languageService.findOne({id});
+    return this.repository.findOne({ where: { id: id } });
   }
 }

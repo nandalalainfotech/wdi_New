@@ -9,6 +9,7 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService extends BaseService {
+
   saltRounds = 10;
   constructor(
     @InjectRepository(UserEntity)

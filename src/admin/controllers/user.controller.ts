@@ -1,21 +1,21 @@
-import { Body, Controller, DefaultValuePipe, Get, HttpException, HttpStatus, Param, ParseIntPipe, Post, Put, Query, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Put, Query, UseInterceptors } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { UsersService } from 'src/services/users.service';
-import { PaginationResponseInterceptor } from 'src/interceptors/paginationResponse.interceptor';
-import { ItemResponseInterceptor } from 'src/interceptors/itemResponse.interceptor';
-import { CreateUserDto, UpdateUserDto } from '../dtos/user.dts';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from 'src/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from "typeorm";
+import { ItemResponseInterceptor } from 'src/interceptors/itemResponse.interceptor';
+import { PaginationResponseInterceptor } from 'src/interceptors/paginationResponse.interceptor';
+import { UsersService } from 'src/services/users.service';
+import { Repository } from 'typeorm';
+import { CreateUserDto, UpdateUserDto } from '../dtos/user.dts';
 
 @ApiTags('User')
 @Controller('v1/users')
 export class UserController {
-   saltRounds = 10;
-  repository: any;
-  constructor(private userService: UsersService,
-    @InjectRepository(UserEntity) private readonly userEntity: Repository<UserEntity>) {}
+  saltRounds = 10;
+  constructor(@InjectRepository(UserEntity)
+  private readonly repository: Repository<UserEntity>,
+    private userService: UsersService) { }
 
   @UseInterceptors(new PaginationResponseInterceptor())
   @Get()
@@ -38,29 +38,18 @@ export class UserController {
   }
 
   async save(id: number, user: CreateUserDto) {
-
-    console.log("user11111111-------->", user);
-
-    let userEntity = new UserEntity();
-    userEntity = await this.userEntity.findOne({ where: { email: user.email} });
-
-    if(!userEntity) {
-
+    let userss = await this.repository.findOne({ where: { email: user.email } });
     const hash = await bcrypt.hash(user.password, this.saltRounds);
     user.password = hash;
-    this.userService.save(id, user, {});
+    this.userService.save(id, user, {
+    });
     user.password = '';
     return user;
-    }
-    else {
-      throw new HttpException('User Email Already Exists', HttpStatus.UNPROCESSABLE_ENTITY); 
-    }
-    
   }
 
   @UseInterceptors(new ItemResponseInterceptor())
   @Get(':id')
   view(@Param('id') id: number) {
-    return this.userService.findOne({id});
+    return this.repository.findOne({ where: { id: id } });
   }
 }

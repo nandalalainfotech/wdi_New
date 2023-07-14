@@ -3,6 +3,9 @@ import { IsEmail, IsNotEmpty } from "class-validator";
 import { StatusEnum } from "src/enums/status.enum";
 
 export class FormDto {
+
+    id: number; 
+    
     @ApiProperty()
     @IsNotEmpty()
     firstName: string;
