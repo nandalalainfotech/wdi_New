@@ -1,0 +1,67 @@
+import { MigrationInterface, QueryRunner, Table } from "typeorm"
+
+import { charsetCollation } from "../../config/typeOrm.config"
+
+export class Permission1688613824369 implements MigrationInterface {
+
+    public async up(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.createTable(
+            new Table({
+                name: "permission",
+                columns: [
+                    {
+                        name: "id",
+                        type: "bigint",
+                        width: 20,
+                        unsigned: true,
+                        isPrimary: true,
+                        isGenerated: true,
+                        generationStrategy: 'increment'
+                    },
+                    {
+                        name: "name",
+                        type: "varchar",
+                        length: "60",
+                        isNullable: false,
+                        default: '""',
+                        ...charsetCollation
+                    },
+                   
+                    {
+                        name: "status",
+                        type: "tinyint",
+                        width: 3,
+                        unsigned: true,
+                        default: 0
+                    },
+                    {
+                        name: "created_at",
+                        type: "timestamp",
+                        isNullable: true,
+                        default: null
+                    },
+                    {
+                        name: "updated_at",
+                        type: "timestamp",
+                        isNullable: true,
+                        default: null
+                    },
+                    {
+                        name: "deleted_at",
+                        type: "timestamp",
+                        isNullable: true,
+                        default: null
+                    },
+                ],
+                engine: 'InnoDB'
+            }),
+            true,
+        )
+        await queryRunner.query(`ALTER TABLE permission DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`)
+    }
+
+    public async down(queryRunner: QueryRunner): Promise<void> {
+        await queryRunner.dropTable("permission")
+    }
+
+}
